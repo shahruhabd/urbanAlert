@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали заявки</title>
+    <!-- Подключение Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Детали заявки</h1>
+
+        <div class="card">
+            <div class="card-header">
+                Заявка от {{ application.creator }}
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Описание проблемы</h5>
+                <p class="card-text">{{ application.description|default:"Описание отсутствует" }}</p>
+            
+                <h5 class="card-title">Категория</h5>
+                <p class="card-text">
+                    <span class="badge bg-info">{{ application.category.name }}</span>
+                </p>
+            
+                <h5 class="card-title">Дата создания</h5>
+                <p class="card-text">
+                    <i class="far fa-calendar-alt"></i> {{ application.created_at|date:'d.m.Y H:i' }}
+                </p>
+            
+                <h5 class="card-title">Ответственный за категорию</h5>
+                <p class="card-text">
+                    {% if application.category.responsible_person %}
+                        <i class="fas fa-user"></i> {{ application.category.responsible_person.username }}
+                    {% else %}
+                        <span class="text-muted">Ответственный не назначен</span>
+                    {% endif %}
+                </p>
+            
+                <h5 class="card-title">Прикрепленные файлы</h5>
+                <div class="mb-3">
+                    {% if application.media_files.all %}
+                        {% for media in application.media_files.all %}
+                            {% if media.media_type == 'photo' %}
+                                <img src="{{ media.file.url }}" alt="Фото" class="img-fluid mb-3">
+                            {% elif media.media_type == 'video' %}
+                                <video controls class="w-100 mb-3">
+                                    <source src="{{ media.file.url }}" type="video/mp4">
+                                    Ваш браузер не поддерживает видео.
+                                </video>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Файлы не прикреплены</p>
+                    {% endif %}
+                </div>
+            
+                <form method="POST" class="mt-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Комментарий</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Добавьте комментарий..."></textarea>
+                    </div>
+            
+                    <button type="submit" name="approve" class="btn btn-success">
+                        <i class="fas fa-check"></i> Принять
+                    </button>
+                    <button type="submit" name="decline" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Отклонить
+                    </button>
+                </form>
+            </div>
+            
+            <div class="card-footer text-muted">
+                Текущий статус: {{ application.get_status_display }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключение Bootstrap JS и Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
